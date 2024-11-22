@@ -1,0 +1,8 @@
+.git/
+app/__pycache__
+app/log
+*.pyc
+*.pyo
+*.pyd
+*.log
+Dockerfile
