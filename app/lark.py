@@ -6,7 +6,7 @@ from utils import build_refresh_content
 
 lark_router = APIRouter()
 
-@lark_router.post("/")
+@lark_router.post("/lark")
 async def lark(request: Request):
 
     data = await request.json()

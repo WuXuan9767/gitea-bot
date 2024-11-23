@@ -13,8 +13,24 @@ client = lark.Client.builder() \
     .log_level(lark.LogLevel.INFO) \
     .build()
 
+def build_deploy_url(repo_name: str):
 
-def build_content(uuid: str, action: str, merged: bool, state: str, repo_name: str, username: str, url: str, title: str):
+    repo_parts = repo_name.split('/')   # 分割 repo_name
+    if len(repo_parts) == 2:
+        prefix = repo_parts[0]
+        project_name = repo_parts[1]
+        if prefix != "be" and prefix != "fe":
+            logger.error(f"{prefix}不是一个合法的组织，仅支持 be, fe")
+            return False
+        deploy_url = f"https://{prefix}-prod.redrock.cqupt.edu.cn/{project_name}"
+        logger.debug(f"返回的部署地址{deploy_url}")
+        return deploy_url
+    else:
+        logger.error(f"{repo_name}不是一个合法的项目名，仅支持 be/***, fe/***")
+        return False
+
+
+def build_content(uuid: str, action: str, merged: bool, state: str, repo_name: str, username: str, url: str, deploy_url:str, title: str):
 # passed 为 True 表示不启用按钮，为 False 表示启用按钮
 # state 有 open 和 closed 两种状态
     if action == "closed" and merged == False and state == "closed":
@@ -40,6 +56,7 @@ def build_content(uuid: str, action: str, merged: bool, state: str, repo_name: s
        passed = False
     else:
        return False
+    logger.info(action_message)
     content = {
         "type": "template",
         "data": {
@@ -51,7 +68,9 @@ def build_content(uuid: str, action: str, merged: bool, state: str, repo_name: s
                 "repo_name": repo_name,  
                 "username": username,
                 "title":  title,
-                "passed": passed  
+                "passed": passed,
+                "url": url,
+                "deploy_url": deploy_url
             }
         }
     }
@@ -92,7 +111,9 @@ def build_refresh_content(uuid: str, approver_user_id: str):
                         "approver_user_id": approver_user_id,
                         "repo_name": data['repo_name'],  
                         "username": data['username'],  
-                        "title":  data['title'] 
+                        "title":  data['title'],
+                        "url": data['url'],
+                        "deploy_url": data['deploy_url']
                     }
                 }
             },
@@ -150,8 +171,7 @@ def send_message(content_data: dict[str]):
     
     # 处理失败返回
     if not response.success():
-        logger.error(
-            f"卡片发送失败, code: {response.code}, msg: {response.msg}, log_id: {response.get_log_id()}, resp: \n{json.dumps(json.loads(response.raw.content), indent=4, ensure_ascii=False)}")
+        logger.error(f"卡片发送失败, code: {response.code}, msg: {response.msg}, log_id: {response.get_log_id()}, resp: \n{json.dumps(json.loads(response.raw.content), indent=4, ensure_ascii=False)}")
         return
 
     logger.debug(response.data)

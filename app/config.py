@@ -1,8 +1,13 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv("../.env")
-
+env_file = "../.env"
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+    print(f"{env_file} 文件加载成功")
+else:
+    print(f"{env_file} 文件不存在")
+    
 class Config:
     # Gitea 配置
     GITEA_SECRET = os.getenv("GITEA_SECRET") 
@@ -28,18 +33,20 @@ class Config:
     # redis 数据库配置
     IS_SINGLE = bool(os.getenv("IS_SINGLE"))
     REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+    REDIS_DATABASE = int(os.getenv("REDIS_DATABASE"))
     
     # 单节点
     SINGLE_REDIS_HOST = os.getenv("SINGLE_REDIS_HOST")
     SINGLE_REDIS_PORT = os.getenv("SINGLE_REDIS_PORT")
+    
 
     # 哨兵模式
     SENTINEL_NAME = os.getenv("SENTINEL_NAME")
-    SENTINEL_HOSTS = os.getenv("SENTINEL_HOSTS")
+    SENTINEL_HOSTS = os.getenv("SENTINEL_HOSTS") # 确保地址格式为 'host:port, host:port'
 
     # 日志配置
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-    LOG_FILE_PATH = os.path.abspath(os.getenv("LOG_FILE_PATH", "../log/app.log"))
+    LOG_FILE_PATH = os.path.abspath(os.getenv("LOG_FILE_PATH", "log/app.log"))
     
 missing_vars = []
 
